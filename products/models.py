@@ -6,7 +6,7 @@ class Category(models.Model):
     name = models.CharField(max_length=50, blank=False)
 
 class Product(models.Model):
-    category_id = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, blank=False)
     measurement_units = models.CharField(max_length=5, default="kg")
 
