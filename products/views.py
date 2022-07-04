@@ -4,8 +4,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Category, Product
-from .forms import CategoryForm, ProductForm
+from .models import Category, Product, ProductTransaction
+from .forms import CategoryForm, ProductForm, ProductTranscationForm
 
 
 def healthcheck(request):
@@ -56,3 +56,22 @@ def create_category(request):
         return JsonResponse({'error': "Category already exists"})
     else:
         return JsonResponse({'error': "Method not allowed, use POST instead"}, status=405)
+
+@csrf_exempt
+def make_product_transaction(request):
+    if request.method == "POST":
+        post_data = dict(json.loads(request.body.decode("utf-8")))
+        form = ProductTranscationForm(post_data or None)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'response': OK})
+        return JsonResponse({'error': "There can be multiple errors"})
+    else:
+        return JsonResponse({'error': "Method not allowed, use POST instead"}, status=405)
+
+def get_report(request):
+    timestamp = request.GET.get('timestamp')
+    data = list(ProductTransaction.objects.filter(direction="IN").filter(timestamp__lte=timestamp).values())
+    print(data)
+    # ProductTransaction is not JSON serializable. Why ? We have ProductTransaction type in list no ? but with .values() it works
+    return JsonResponse({'response': data})

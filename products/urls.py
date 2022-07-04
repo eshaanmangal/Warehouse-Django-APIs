@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import healthcheck, get_category, get_product, get_all_categories, get_all_products, create_category, create_product
+from .views import *
 
 urlpatterns = [
     path('healthcheck/', healthcheck),
@@ -12,5 +12,8 @@ urlpatterns = [
     path('categories/<int:category_id>', get_category),
 
     path('create', create_product),
-    path('category/create', create_category)
+    path('category/create', create_category),
+
+    path('transaction', make_product_transaction),
+    path('report', get_report)
 ]

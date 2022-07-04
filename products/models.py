@@ -17,7 +17,10 @@ class ProductTransaction(models.Model):
     )
     direction = models.CharField(max_length=5, choices=DIRECTION)
     name = models.CharField(max_length=60)
-    timestamp = models.DateTimeField()
-    product_id_type = models.ForeignKey(Product, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=True)
+    product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
     amount = models.IntegerField()
     partner_id = models.ForeignKey(Partner, on_delete=models.SET_NULL, null=True, default=-1)
+
+    def __str__(self):
+        return '({0.direction!s}, {0.name!s}, {0.timestamp!s}, {0.amount!s})'.format(self)
