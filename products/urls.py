@@ -1,19 +1,15 @@
 from django.urls import path
 
-from .views import *
+from .views import CategoryViews, ProductViews, ProductTranscationViews
 
 urlpatterns = [
-    path('healthcheck/', healthcheck),
     
-    path('all', get_all_products),
-    path('categories/all', get_all_categories),
+    path('', ProductViews.as_view()),
+    path('<int:id>', ProductViews.as_view()),
     
-    path('<int:product_id>', get_product),
-    path('categories/<int:category_id>', get_category),
-
-    path('create', create_product),
-    path('category/create', create_category),
-
-    path('transaction', make_product_transaction),
-    path('report', get_report)
+    path('category', CategoryViews.as_view()),
+    path('category/<int:id>', CategoryViews.as_view()),
+    
+    path('transaction', ProductTranscationViews.as_view()),
+    path('transaction/<int:id>', ProductTranscationViews.as_view())
 ]

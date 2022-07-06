@@ -1,77 +1,108 @@
-from http.client import OK
-import json
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
+from .serializers import CategorySerializer, ProductSerializer, ProductTranscationSerializer
 from .models import Category, Product, ProductTransaction
-from .forms import CategoryForm, ProductForm, ProductTranscationForm
+
+class CategoryViews(APIView):
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "error", "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, id=None):
+        if id:
+            category = Category.objects.get(id=id)
+            serializer = CategorySerializer(category)
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    def patch(self, request, id=None):
+        item = Category.objects.get(id=id)
+        serializer = CategorySerializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data})
+        else:
+            return Response({"status": "error", "data": serializer.errors})
+    
+    def delete(self, request, id=None):
+        item = get_object_or_404(Category, id=id)
+        item.delete()
+        return Response({"status": "success", "data": "Item Deleted"})
 
 
-def healthcheck(request):
-    return JsonResponse({'status': OK})
+class ProductViews(APIView):
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "error", "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, id=None):
+        if id:
+            category = Product.objects.get(id=id)
+            serializer = ProductSerializer(category)
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+
+        categories = Product.objects.all()
+        serializer = ProductSerializer(categories, many=True)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    def patch(self, request, id=None):
+        item = Product.objects.get(id=id)
+        serializer = ProductSerializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data})
+        else:
+            return Response({"status": "error", "data": serializer.errors})
+    
+    def delete(self, request, id=None):
+        item = get_object_or_404(Product, id=id)
+        item.delete()
+        return Response({"status": "success", "data": "Item Deleted"})
 
 
-def get_all_products(request):
-    return JsonResponse({'products': list(Product.objects.values())})
+class ProductTranscationViews(APIView):
+    def post(self, request):
+        serializer = ProductTranscationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({"status": "error", "data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request, id=None):
+        if id:
+            productTrans = ProductTransaction.objects.get(id=id)
+            serializer = ProductTranscationSerializer(productTrans)
+            return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
 
-def get_all_categories(request):
-    return JsonResponse({'categories': list(Category.objects.values())})
-
-
-def get_product(request, product_id):
-    product = Product.objects.get(id=product_id)
-    data = {'id': product.id, 'category': product.category.name, 'name': product.name, 'measurement_units': product.measurement_units}
-    return JsonResponse(data)
-
-
-def get_category(request, category_id):
-    category = Category.objects.get(id=category_id)
-    data = {'id': category.id, 'name': category.name}
-    return JsonResponse(data)
-
-
-@csrf_exempt
-def create_product(request):
-    if request.method == "POST":
-        post_data = dict(json.loads(request.body.decode("utf-8")))
-        form = ProductForm(post_data or None)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'status': {'name': form.cleaned_data.get('name'), 'category': form.cleaned_data.get('category').name}})
-        return JsonResponse({'error': "Don't know can be multiple errors"})
-    else:
-        return JsonResponse({'error': "Method not allowed, use POST instead"}, status=405)
-
-
-@csrf_exempt
-def create_category(request):
-    if request.method == "POST":
-        post_data = dict(json.loads(request.body.decode("utf-8")))
-        form = CategoryForm(post_data or None)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'response': form.cleaned_data})
-        return JsonResponse({'error': "Category already exists"})
-    else:
-        return JsonResponse({'error': "Method not allowed, use POST instead"}, status=405)
-
-@csrf_exempt
-def make_product_transaction(request):
-    if request.method == "POST":
-        post_data = dict(json.loads(request.body.decode("utf-8")))
-        form = ProductTranscationForm(post_data or None)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'response': OK})
-        return JsonResponse({'error': "There can be multiple errors"})
-    else:
-        return JsonResponse({'error': "Method not allowed, use POST instead"}, status=405)
-
-def get_report(request):
-    timestamp = request.GET.get('timestamp')
-    data = list(ProductTransaction.objects.filter(direction="IN").filter(timestamp__lte=timestamp).values())
-    print(data)
-    # ProductTransaction is not JSON serializable. Why ? We have ProductTransaction type in list no ? but with .values() it works
-    return JsonResponse({'response': data})
+        categories = ProductTransaction.objects.all()
+        serializer = ProductTranscationSerializer(categories, many=True)
+        return Response({"status": "success", "data": serializer.data}, status=status.HTTP_200_OK)
+    
+    def patch(self, request, id=None):
+        item = ProductTransaction.objects.get(id=id)
+        serializer = ProductTranscationSerializer(item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success", "data": serializer.data})
+        else:
+            return Response({"status": "error", "data": serializer.errors})
+    
+    def delete(self, request, id=None):
+        item = get_object_or_404(ProductTransaction, id=id)
+        item.delete()
+        return Response({"status": "success", "data": "Item Deleted"})
